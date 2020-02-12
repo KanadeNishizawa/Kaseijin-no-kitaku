@@ -7,9 +7,9 @@
  *
  */
 
-import { Ahiru } from "./ahiru.js";
-import { Buncho } from "./buncho.js";
-import { Bar } from "./bar.js";
+import { Balloon } from "./balloon.js";
+import { Plane } from "./plane.js";
+import { Player } from "./player.js";
 
 export class Game {
   /************************************************
@@ -19,145 +19,113 @@ export class Game {
    *
    */
   constructor(stage) {
+    var stage = new createjs.Stage("myCanvas");
     console.log("Game のインスタンスが生成されたよ");
-
     //引数のstage をメンバーの変数にするよ
-    //先頭に「this」がいちいち付いているけど、この「this」は居場所を示していて、
-    //インスタンスの中にある変数ですよ、ということを示しています
-    this.stage = stage;
 
     //学籍番号や概要などを表示するエリア
     this.titleTag = document.getElementById("titleTag");
     this.nameTag = document.getElementById("nameTag");
     this.scoreTag = document.getElementById("scoreTag");
 
-    //ここから画面の要素を初期化します
-    this.setUp();
-
-    //Ticker を設定。1秒間に「loop」の関数を30回実行するように命令している。
-    createjs.Ticker.framerate = 30;
-    createjs.Ticker.addEventListener("tick", this.stage);
-    createjs.Ticker.addEventListener("tick", () => {
-      this.loop();
-    });
-
     //音を鳴らす準備
     createjs.Sound.alternateExtensions = ["mp3"];
     createjs.Sound.registerSound("./sounds/hit.mp3", "hit");
-  }
 
-  /************************************************
-   *
-   * 画面の情報を初期化します。
-   *
-   */
-  setUp() {
     //タイトルを書き換える
     this.titleTag.textContent = "Programing Advance";
-
     //名前を書き換える
-    this.nameTag.textContent = "input your name";
+    this.nameTag.textContent = "KanadeNishizawa";
 
     //点数表示を初期値に書き換える
     this.scoreTag.textContent = "0";
 
     //スコアを計算するための変数
-    this.score = 0;
+    var score = 0;
 
-    //キャラクターを入れる配列を作るよ
-    this.chars = [];
+    //足場を入れる配列を作る
+    var scaffolds = [];
 
-    //キャラクターを作るよ
-    for (let i = 0; i < 5; i++) {
-      //アヒルを2体生成するよ
-      let ahiru = new Ahiru();
-      this.stage.addChild(ahiru);
-      this.chars.push(ahiru);
+    // プレイヤーキャラを生成する
+    var player = new Player();
+    stage.addChild(player);
 
-      let buncho = new Buncho();
-      this.stage.addChild(buncho);
-      this.chars.push(buncho);
-    }
+    //Ticker を設定。1秒間に「loop」の関数を30回実行するように命令している。
+    createjs.Ticker.framerate = 30;
+    createjs.Ticker.addEventListener("tick", handleTick);
+    var count = 0; //フレーム番号
 
-    //画面にバーを表示するよ
-    this.bar = new Bar();
-    this.bar.x = Math.floor(this.stage.canvas.width / 2);
-    this.bar.y = Math.floor(this.stage.canvas.height - 50);
-    this.stage.addChild(this.bar);
+    function handleTick() {
+      //クリックした場所へ横移動する
+      document.addEventListener("click", e => {
+        player.position = e.offsetX;
+        player.vx = (e.offsetX - player.x) / 50;
+      });
+      player.move();
 
-    document.addEventListener("click", e => {
-      this.bar.position = e.offsetX;
-      this.bar.vx = (e.offsetX - this.bar.x) / 50;
-    });
+      count = count + 1;
+      // console.log(count);
+      if (count % 100 == 0) {
+        console.log("カウント＝100＊n");
+        //風船を生成する
+        var balloon = new Balloon();
+        stage.addChild(balloon);
+        scaffolds.push(balloon);
+        //飛行機を生成する
+        var plane = new Plane();
+        stage.addChild(plane);
+        scaffolds.push(plane);
+        console.log("足場の描画終了");
 
-    this.debug();
-  }
-  /************************************************
-   *
-   * アニメーションが動くところ。
-   * 1フレームの間にどれだけ絵が変化するかを書く。
-   *
-   */
-  loop() {
-    for (let i = 0; i < this.chars.length; i++) {
-      let char = this.chars[i]; //配列からキャラクターを取り出す
-      // ここで座標をグローバルからbarの中の座標系に変換
-      let p = this.bar.globalToLocal(char.x, char.y);
-      // キャラクターが落下している時のみ、足場との衝突（着地）判定を行う
-      let hit = this.bar.hitTest(p.x, p.y) && this.bar.vy >= 0;
-
-      if (hit) {
-        this.bar.vy = -0.8;
-        setTimeout(() => {
-          this.bar.vy = 1;
-        }, 1000);
-        createjs.Sound.play("hit");
-        if (char.type == "ahiru") {
-          this.score++;
-          this.scoreTag.textContent = "P=" + this.score.toString();
+        // 要素が画面外へ出たか判定する関数を呼び出す
+        if (scaffolds.y > stage.canvas.height + 10) {
+          console.log("落下し終わったよ");
+          stage.removeChild(scaffolds[i]);
+          hit = true;
         }
       }
 
-      //移動の命令をちょこちょこ実行する代わりに、移動しろと命令するだけ
-      char.move();
-      this.bar.move();
+      for (var i = 0; i < scaffolds.length; i++) {
+        let scaffold = scaffolds[i]; //足場の配列から足場を取り出す
+        // ここで座標をグローバルからPlayerの中の座標系に変換
+        let p = player.globalToLocal(scaffold.x, scaffold.y);
+        // キャラクターが落下している時のみ、足場との衝突（着地）判定を行う
+        let hit = player.hitTest(p.x, p.y) && player.vy >= 0;
+        console.log("ヒット判定");
+        // 足場への着地時、プレイヤーキャラがジャンプする
+        if (hit) {
+          // ジャンプ時の動き
+          createjs.Tween.get(player)
+            .to({ y: player.y - 300 }, 800, createjs.Ease.cubicOut)
+            .call(fall);
 
-      //壁への当たり判定の関数を呼ぶ
-      this.bound(char);
+          function fall() {
+            // ジャンプ後の落下（衝突が上方向からであることを判定するためにベクトルで動かす）
+            player.vy = 1;
+          }
+          // ジャンプ時の音
+          createjs.Sound.play("hit");
+          // ジャンプ時の点数加算
+          score += 1;
+          scoreTag.textContent = "P=" + score.toString();
+          console.log("ジャンプ終了");
+        }
+      }
     }
+    stage.update();
   }
 
-  /************************************************
-   *
-   * 壁への当たり判定のチェック
-   *
-   */
-  bound(target) {
-    let hit = false;
-    //X座標側のチェック
-    if (target.x < 0 || target.x > this.stage.canvas.width) {
-      target.vx *= -1;
-      hit = true;
-    }
-
-    //Y座標側のチェック
-    if (target.y < 0 || target.y > this.stage.canvas.height) {
-      target.vy *= -1;
-      hit = true;
-    }
-
-    //関数の呼び出し元に、当たったかどうかの結果を返す
-    return hit;
-  }
-  //   movingBar(elment) {
-  //     console.log(this.bar);
-  //     this.bar.x = elment.offsetX;
-  //     this.bar.y = elment.offsetY;
+  // // 要素が画面外に出たかを判定する関数
+  // out(target) {
+  //   let hit = false;
+  //   //　落下し画面外に行った場合に消去
+  //   if (target.y > this.stage.canvas.height + 10) {
+  //     console.log("落下し終わったよ");
+  //     this.stage.removeChild(target);
+  //     hit = true;
   //   }
-  debug() {
-    console.log(this.bar.vy);
-    setTimeout(() => {
-      this.debug();
-    }, 1000);
-  }
+
+  //   //関数の呼び出し元に、当たったかどうかの結果を返す
+  //   return hit;
+  // }
 }
