@@ -1,14 +1,6 @@
-/**
- *
- * プログラミング基礎 テンプレート
- * 今回は JavaScript の ES6 の書き方で、クラスを使ってプログラミングをします。
- * ゲームなどを作るときには、画面のキャラクターを1つずつプログラムで動かすよりも、勝手に動くようにしたほうが効率的です。
- * 今日はクラスの書き方の基礎を勉強して、まずは前回の時計を再現してみましょう。
- *
- */
-
 import { Balloon } from "./balloon.js";
 import { Plane } from "./plane.js";
+import { Ufo } from "./ufo.js";
 import { Player } from "./player.js";
 
 export class Game {
@@ -19,19 +11,41 @@ export class Game {
    *
    */
   constructor(stage) {
-    var stage = new createjs.Stage("myCanvas");
+    this.stage = stage;
     console.log("Game のインスタンスが生成されたよ");
-    //引数のstage をメンバーの変数にするよ
 
     //学籍番号や概要などを表示するエリア
     this.titleTag = document.getElementById("titleTag");
     this.nameTag = document.getElementById("nameTag");
     this.scoreTag = document.getElementById("scoreTag");
 
-    //音を鳴らす準備
-    createjs.Sound.alternateExtensions = ["mp3"];
-    createjs.Sound.registerSound("./sounds/hit.mp3", "hit");
+    this.setUp();
 
+    //Ticker を設定。1秒間に「loop」の関数を30回実行するように命令している。
+    createjs.Ticker.framerate = 30;
+    createjs.Ticker.addEventListener("tick", this.stage);
+    createjs.Ticker.addEventListener("tick", () => {
+      this.loop();
+    });
+    //クリックした場所へ横移動する
+    this.stage.canvas.addEventListener("click", e => {
+      this.player.position = e.offsetX;
+      this.player.vx = (e.offsetX - this.player.x) / 10;
+    });
+
+    //音を鳴らす準備
+    createjs.Sound.alternateExtensions = ["wav"];
+    createjs.Sound.registerSound("./sounds/hit1.wav", "hit1");
+    createjs.Sound.registerSound("./sounds/hit2.wav", "hit2");
+    createjs.Sound.registerSound("./sounds/ufo.wav", "ufo");
+    createjs.Sound.registerSound("./sounds/gameover.wav", "gameover");
+  }
+  /************************************************
+   *
+   * 画面の情報を初期化します。
+   *
+   */
+  setUp() {
     //タイトルを書き換える
     this.titleTag.textContent = "Programing Advance";
     //名前を書き換える
@@ -41,91 +55,91 @@ export class Game {
     this.scoreTag.textContent = "0";
 
     //スコアを計算するための変数
-    var score = 0;
+    this.score = 0;
 
     //足場を入れる配列を作る
-    var scaffolds = [];
+    this.scaffolds = [];
 
     // プレイヤーキャラを生成する
-    var player = new Player();
-    stage.addChild(player);
+    this.player = new Player();
+    //初期位置（画面の下方中央）
+    this.player.x = Math.floor(this.stage.canvas.width / 2);
+    this.player.y = Math.floor(this.stage.canvas.height - 100);
+    this.stage.addChild(this.player);
 
-    //Ticker を設定。1秒間に「loop」の関数を30回実行するように命令している。
-    createjs.Ticker.framerate = 30;
-    createjs.Ticker.addEventListener("tick", handleTick);
-    var count = 0; //フレーム番号
+    this.count = 0; //フレーム番号
+  }
 
-    function handleTick() {
-      //クリックした場所へ横移動する
-      document.addEventListener("click", e => {
-        player.position = e.offsetX;
-        player.vx = (e.offsetX - player.x) / 50;
-      });
-      player.move();
+  loop() {
+    this.count += 1; //1フレーム進むごとに1カウント増えていく
+    if (this.count % 45 == 0) {
+      //45カウントに1回、風船を生成する
+      let balloon = new Balloon();
+      this.stage.addChild(balloon);
+      this.scaffolds.push(balloon);
+    }
+    if (this.count % 60 == 0) {
+      //50カウントに1回、飛行機を生成する
+      let plane = new Plane();
+      this.stage.addChild(plane);
+      this.scaffolds.push(plane);
+    }
+    if (this.count % 130 == 0) {
+      //130カウントに1回、UFOを生成する
+      let ufo = new Ufo();
+      this.stage.addChild(ufo);
+      this.scaffolds.push(ufo);
+    }
 
-      count = count + 1;
-      // console.log(count);
-      if (count % 100 == 0) {
-        console.log("カウント＝100＊n");
-        //風船を生成する
-        var balloon = new Balloon();
-        stage.addChild(balloon);
-        scaffolds.push(balloon);
-        //飛行機を生成する
-        var plane = new Plane();
-        stage.addChild(plane);
-        scaffolds.push(plane);
-        console.log("足場の描画終了");
+    this.player.move();
 
-        // 要素が画面外へ出たか判定する関数を呼び出す
-        if (scaffolds.y > stage.canvas.height + 10) {
-          console.log("落下し終わったよ");
-          stage.removeChild(scaffolds[i]);
-          hit = true;
-        }
+    for (var i = 0; i < this.scaffolds.length; i++) {
+      let scaffold = this.scaffolds[i]; //足場の配列から足場を取り出す
+      //足場が下にスクロール
+      scaffold.x += scaffold.vx;
+      scaffold.y += scaffold.vy;
+      // 要素が画面外へ出たら消去
+      if (scaffold.y > window.innerHeight + 10) {
+        console.log("落下し終わったよ");
+        this.stage.removeChild(scaffold);
+        this.scaffolds.splice(i, 1);
       }
+      // ここで座標をグローバルからPlayerの中の座標系に変換
+      let p = this.player.globalToLocal(scaffold.x, scaffold.y);
+      // キャラクターが落下している時のみ、足場との衝突（着地）判定を行う
+      let hit = this.player.hitTest(p.x, p.y) && this.player.vy >= 0;
 
-      for (var i = 0; i < scaffolds.length; i++) {
-        let scaffold = scaffolds[i]; //足場の配列から足場を取り出す
-        // ここで座標をグローバルからPlayerの中の座標系に変換
-        let p = player.globalToLocal(scaffold.x, scaffold.y);
-        // キャラクターが落下している時のみ、足場との衝突（着地）判定を行う
-        let hit = player.hitTest(p.x, p.y) && player.vy >= 0;
-        console.log("ヒット判定");
-        // 足場への着地時、プレイヤーキャラがジャンプする
-        if (hit) {
-          // ジャンプ時の動き
-          createjs.Tween.get(player)
-            .to({ y: player.y - 300 }, 800, createjs.Ease.cubicOut)
-            .call(fall);
-
-          function fall() {
-            // ジャンプ後の落下（衝突が上方向からであることを判定するためにベクトルで動かす）
-            player.vy = 1;
-          }
+      // console.log("ヒット判定");
+      // 足場への着地時、プレイヤーキャラがジャンプする
+      if (hit) {
+        // ジャンプ時の動き
+        createjs.Tween.get(this.player)
+          .to({ y: this.player.y - 350 }, 800, createjs.Ease.cubicOut)
+          .call(this.fall());
+        if (scaffold.type === "balloon") {
           // ジャンプ時の音
-          createjs.Sound.play("hit");
+          createjs.Sound.play("hit1");
           // ジャンプ時の点数加算
-          score += 1;
-          scoreTag.textContent = "P=" + score.toString();
-          console.log("ジャンプ終了");
+          this.score += 1;
+          scoreTag.textContent = "P=" + this.score.toString();
+        } else if (scaffold.type === "plane") {
+          // ジャンプ時の音
+          createjs.Sound.play("hit2");
+          // ジャンプ時の点数加算
+          this.score += 5;
+          scoreTag.textContent = "P=" + this.score.toString();
+        } else if (scaffold.type === "ufo") {
+          // ジャンプ時の音
+          createjs.Sound.play("hit2");
+          // ジャンプ時の点数加算
+          this.score += 10;
+          scoreTag.textContent = "P=" + this.score.toString();
         }
       }
     }
-    stage.update();
   }
-
-  // // 要素が画面外に出たかを判定する関数
-  // out(target) {
-  //   let hit = false;
-  //   //　落下し画面外に行った場合に消去
-  //   if (target.y > this.stage.canvas.height + 10) {
-  //     console.log("落下し終わったよ");
-  //     this.stage.removeChild(target);
-  //     hit = true;
-  //   }
-
-  //   //関数の呼び出し元に、当たったかどうかの結果を返す
-  //   return hit;
-  // }
+  fall() {
+    // ジャンプ後の落下（衝突が上方向からであることを判定するためにベクトルで動かす）
+    this.player.vy = 11;
+  }
 }

@@ -8,21 +8,17 @@ export class Plane extends Scaffold {
    *
    */
   constructor() {
-    //Scaffoldという先祖のクラスのコンストラクタに"plane"という引数を渡す
     super("./images/plane.png");
     this.type = "plane";
     console.log("飛行機が生成されたよ");
+    this.y = window.innerWidth / 3;
+    this.x =
+      window.innerWidth / 1.5 + Math.floor(Math.random() * window.innerWidth);
+    this.vx = Math.random() * -15;
   }
-
-  /************************************************
-   *
-   * 移動しろという命令
-   * 継承元に書いてあるmoveという関数を上書きしている
-   *
-   */
-  // move() {
-  //   if (this.press == false) {
-  //     super.move(); //継承元のクラスに書いてあるmoveという関数を呼んで動かす
-  //   }
-  // }
+  flow() {
+    if (this.press == false) {
+      super.flow();
+    }
+  }
 }
