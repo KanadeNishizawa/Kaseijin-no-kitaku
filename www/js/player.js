@@ -5,7 +5,6 @@ export class Player extends createjs.Bitmap {
   constructor() {
     let img = "./images/player.png";
     super(img);
-    console.log("Playerクラス上でプレイヤーキャラクターが生成されたよ");
     //読み込んだ画像の中心位置をずらす
     this.regX = 50;
     this.regY = 180;

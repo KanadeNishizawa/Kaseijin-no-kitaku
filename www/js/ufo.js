@@ -10,7 +10,6 @@ export class Ufo extends Scaffold {
   constructor() {
     super("./images/ufo.png");
     this.type = "ufo";
-    console.log("UFOが生成されたよ");
     this.y = window.innerWidth / 3;
     this.vy = 3;
     this.vx = Math.ceil(Math.random() * 30) - 10;

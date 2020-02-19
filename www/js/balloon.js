@@ -10,7 +10,6 @@ export class Balloon extends Scaffold {
   constructor() {
     super("./images/balloon.png");
     this.type = "balloon";
-    console.log("風船が生成されたよ");
     this.vx = 0;
   }
   flow() {

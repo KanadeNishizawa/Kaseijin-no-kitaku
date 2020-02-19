@@ -10,7 +10,6 @@ export class Plane extends Scaffold {
   constructor() {
     super("./images/plane.png");
     this.type = "plane";
-    console.log("飛行機が生成されたよ");
     this.y = window.innerWidth / 3;
     this.x =
       window.innerWidth / 1.5 + Math.floor(Math.random() * window.innerWidth);
