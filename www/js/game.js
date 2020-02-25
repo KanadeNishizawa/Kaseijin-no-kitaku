@@ -16,10 +16,8 @@ export class Game {
     this.stage = stage;
     this.state = "start";
 
-    //学籍番号や概要などを表示するエリア
-    this.titleTag = document.getElementById("titleTag");
-    this.nameTag = document.getElementById("nameTag");
     this.scoreTag = document.getElementById("scoreTag");
+    this.scoreTag.visible = false;
 
     this.setUp();
 
@@ -42,11 +40,6 @@ export class Game {
    *
    */
   setUp() {
-    //タイトルを書き換える
-    this.titleTag.textContent = "Programing Advance";
-    //名前を書き換える
-    this.nameTag.textContent = "KanadeNishizawa";
-
     //点数表示を初期値に書き換える
     this.scoreTag.textContent = "0";
 
@@ -155,19 +148,19 @@ export class Game {
           createjs.Sound.play("hit1");
           // 風船でのジャンプ時の点数加算
           this.score += 1;
-          scoreTag.textContent = "P=" + this.score.toString();
+          scoreTag.textContent = +this.score.toString();
         } else if (scaffold.type === "plane") {
           // ジャンプ時の音
           createjs.Sound.play("hit2");
           // 飛行機でのジャンプ時の点数加算
           this.score += 5;
-          scoreTag.textContent = "P=" + this.score.toString();
+          scoreTag.textContent = +this.score.toString();
         } else if (scaffold.type === "ufo") {
           // ジャンプ時の音
           createjs.Sound.play("hit2");
           // ufoでのジャンプ時の点数加算
           this.score += 10;
-          scoreTag.textContent = "P=" + this.score.toString();
+          scoreTag.textContent = +this.score.toString();
         }
       }
 
@@ -183,9 +176,9 @@ export class Game {
     }
   }
   jump() {
-    this.player.vy = -16;
+    this.player.vy = -20;
     setTimeout(() => {
       this.player.vy = 13;
-    }, 800);
+    }, 900);
   }
 }
