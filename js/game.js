@@ -40,6 +40,9 @@ export class Game {
    *
    */
   setUp() {
+    //開始画面
+    this.start = new Start(this.stage.canvas.width, this.stage.canvas.height);
+
     //点数表示を初期値に書き換える
     this.scoreTag.textContent = "0";
 
@@ -51,29 +54,24 @@ export class Game {
 
     //Background
     this.bg = new Background();
-    this.stage.addChild(this.bg);
 
     // プレイヤーキャラを生成する
     this.player = new Player();
     //初期位置（画面の下方中央）
     this.player.x = Math.floor(this.stage.canvas.width / 2);
     this.player.y = Math.floor(this.stage.canvas.height - 100);
-    this.stage.addChild(this.player);
-    //クリックした場所へ横移動する
-    this.stage.canvas.addEventListener("click", e => {
-      this.player.position = e.offsetX;
-      this.player.vx = (e.offsetX - this.player.x) / 10;
-    });
 
     this.count = 0; //フレーム番号
 
-    //開始画面
-    this.start = new Start(this.stage.canvas.width, this.stage.canvas.height);
     //クリックしたら文字が消えてゲームがスタート
     this.start.on("click", evt => {
       if (this.state == "start") {
         this.start.visible = false;
         this.state = "game"; //ステータスを変更
+
+        this.stage.addChild(this.bg);
+        this.stage.addChild(this.player);
+
         // ここからloop内のゲームの描画を始める
         createjs.Ticker.addEventListener("tick", () => {
           if (this.state == "game") {
@@ -120,6 +118,11 @@ export class Game {
       this.stage.addChild(ufo);
       this.scaffolds.push(ufo);
     }
+    //クリックした場所へ横移動する
+    this.stage.canvas.addEventListener("click", e => {
+      this.player.position = e.offsetX;
+      this.player.vx = (e.offsetX - this.player.x) / 10;
+    });
 
     this.player.move();
 

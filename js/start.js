@@ -9,10 +9,10 @@ export class Start extends createjs.MovieClip {
 
     // タイトルと説明文
     this.title = new createjs.Bitmap("./images/title.png");
-    this.title.scaleX = (window.innerWidth * 0.9) / 1200;
-    this.title.scaleY = (window.innerWidth * 0.9) / 1200;
-    this.title.regX = 620;
-    this.title.regY = 450;
+    this.title.scaleX = 350 / 400;
+    this.title.scaleY = 350 / 400;
+    this.title.regX = 200;
+    this.title.regY = 150;
     this.title.x = window.innerWidth / 2;
     this.title.y = window.innerHeight / 2;
     this.addChild(this.title);
