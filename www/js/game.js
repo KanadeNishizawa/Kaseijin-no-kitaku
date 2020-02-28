@@ -165,7 +165,7 @@ export class Game {
       }
 
       // プレイヤーが画面外へ落ちたらゲームオーバー;
-      if (this.player.y > window.innerHeight + 200) {
+      if (this.player.y > window.innerHeight + 400) {
         createjs.Sound.stop();
         this.stage.removeChild(this.player);
         this.gameover.render(this.score);
