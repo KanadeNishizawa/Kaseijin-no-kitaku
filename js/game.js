@@ -26,7 +26,7 @@ export class Game {
     createjs.Ticker.addEventListener("tick", this.stage);
 
     //音を鳴らす準備
-    createjs.Sound.alternateExtensions = ["wav"];
+    createjs.Sound.alternateExtensions = ["mp3"];
     createjs.Sound.registerSound("./sounds/start.mp3", "start");
     createjs.Sound.registerSound("./sounds/firstjump.mp3", "firstjump");
     createjs.Sound.registerSound("./sounds/bgm.mp3", "bgm");
